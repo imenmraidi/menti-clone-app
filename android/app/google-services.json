@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "790217894291",
+    "project_id": "menti-app-5e798",
+    "storage_bucket": "menti-app-5e798.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:790217894291:android:fd5bae3e645ab927d2a066",
+        "android_client_info": {
+          "package_name": "com.example.menti_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCN3MkFI9_bfQpmTXrwe1iYbP8fzceUMh0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
