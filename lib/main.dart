@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:menti_clone/pages/auth_page.dart';
-import 'package:menti_clone/pages/home_page.dart';
+import 'package:menti_clone/pages/landing_page.dart';
+import 'package:menti_clone/pages/join_quiz_page.dart'; // You'll create this later
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -16,10 +18,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Firebase Auth',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const AuthPage(),
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const LandingPage(),
+      routes: {
+        '/join': (context) => JoinQuizPage(),
+        // etc.
+      },
     );
   }
 }
