@@ -5,6 +5,7 @@ import 'package:menti_clone/models/question.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Collection Reference for Quizzes
   final String collectionName = 'quizzes';
@@ -14,10 +15,15 @@ class FirestoreService {
     try {
       final quizRef = _db.collection(collectionName).doc(quiz.id);
 
+      // Add the current user's ID as the creator
+      final Map<String, dynamic> quizData = quiz.toMap();
+      quizData['createdBy'] = _auth.currentUser?.uid;
+
       // Save the quiz data
-      await quizRef.set(quiz.toMap());
+      await quizRef.set(quizData);
     } catch (e) {
       print('Error creating quiz: $e');
+      throw e;
     }
   }
 
@@ -46,13 +52,65 @@ class FirestoreService {
     try {
       final quizQuerySnapshot = await _db.collection(collectionName).get();
       return quizQuerySnapshot.docs
-          .map(
-            (doc) => Quiz.fromMap(doc.id, doc.data() as Map<String, dynamic>),
-          )
+          .map((doc) => Quiz.fromMap(doc.id, doc.data()))
           .toList();
     } catch (e) {
       print('Error retrieving all quizzes: $e');
       return [];
+    }
+  }
+
+  // Retrieve quizzes created by the current user
+  Future<List<Quiz>> getUserQuizzes() async {
+    try {
+      final currentUser = _auth.currentUser;
+
+      if (currentUser == null) {
+        return [];
+      }
+
+      final quizQuerySnapshot =
+          await _db
+              .collection(collectionName)
+              .where('createdBy', isEqualTo: currentUser.uid)
+              .orderBy('createdAt', descending: true)
+              .get();
+
+      return quizQuerySnapshot.docs
+          .map((doc) => Quiz.fromMap(doc.id, doc.data()))
+          .toList();
+    } catch (e) {
+      print('Error retrieving user quizzes: $e');
+      return [];
+    }
+  }
+
+  // Delete a quiz
+  Future<void> deleteQuiz(String quizId) async {
+    try {
+      await _db.collection(collectionName).doc(quizId).delete();
+    } catch (e) {
+      print('Error deleting quiz: $e');
+      throw e;
+    }
+  }
+
+  // Update quiz presentation status
+  Future<void> updateQuizPresentationStatus(
+    String quizId, {
+    bool started = false,
+    int currentQuestionIndex = 0,
+  }) async {
+    try {
+      await _db.collection(collectionName).doc(quizId).update({
+        'started': started,
+        'currentQuestionIndex': currentQuestionIndex,
+        'questionStartTime': null,
+        'lastPresented': Timestamp.now(),
+      });
+    } catch (e) {
+      print('Error updating quiz presentation status: $e');
+      throw e;
     }
   }
 }

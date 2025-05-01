@@ -1,13 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 import 'firebase_options.dart';
 import 'package:menti_clone/pages/landing_page.dart';
+import 'package:menti_clone/pages/home_page.dart';
 import 'package:menti_clone/pages/join_quiz_page.dart'; // You'll create this later
+import 'package:menti_clone/pages/admin_quiz_page.dart'; // You'll create this later
+import 'package:menti_clone/pages/playing_quiz_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
+  
+  // Enable persistence for web
+  await FirebaseAuth.instance.setPersistence(Persistence.LOCAL);
+  
   runApp(const MyApp());
 }
 
@@ -17,12 +25,39 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Firebase Auth',
+      title: 'Menti Clone',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const LandingPage(),
+      home: const AuthWrapper(),
       routes: {
         '/join': (context) => JoinQuizPage(),
-        // etc.
+        '/adminQuiz': (context) => AdminQuizPage(quizId: 'some_id'),
+        '/playerQuiz': (context) => PlayingQuizPage(quizId: 'some_id', playerId: 'some_player'),
+      },
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        if (snapshot.hasData) {
+          // User is logged in
+          return const HomePage();
+        }
+        
+        // User is not logged in
+        return const LandingPage();
       },
     );
   }
